@@ -16,9 +16,17 @@ var server = http.createServer(app);
 /* Defines what port to use to listen to web requests */
 var port =  8080;
 
+var bodyParser = require('body-parser');
+app.use(bodyParser.json({ limit: '16mb' }));
+
+var mongoose = require('mongoose');
+var dbAddress = process.env.MONGODB_URI || 'mongodb://127.0.0.1/webform';
+console.log(dbAddress);
+var usermodel = require('./user.js').getModel();
+
 
 /* Defines what function to call when a request comes from the path '/' in http://localhost:8080 */
-app.get('/formpage', (req, res, next) => {
+app.get('/form', (req, res, next) => {
 
 	/* Get the absolute path of the html file */
 	var filePath = path.join(__dirname, './index.html')
@@ -26,6 +34,21 @@ app.get('/formpage', (req, res, next) => {
 	/* Sends the html file back to the browser */
 	res.sendFile(filePath);
 });
+
+app.post('/form', (req, res, next) => {
+
+	var newuser = new usermodel(req.body);
+	newuser.save(function(err) {
+		res.send(err || 'OK');
+	});
+
+});
+
+// app.post('/form', (req, res, next) => {
+//
+// 	console.log(req.body)
+// 	res.send('KO999')
+// });
 
 app.get('/', (req, res, next) => {
 
@@ -37,8 +60,6 @@ app.get('/', (req, res, next) => {
 
 
 });
-
-
 
 
 /* Defines what function to all when the server recieves any request from http://localhost:8080 */
